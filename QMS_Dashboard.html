@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QMS Analytics Dashboard — Sanchez-Marquez et al. (2020)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FAFAF9;color:#2C2C2A;padding:2rem}
+.db{max-width:900px;margin:0 auto}
+.page-title{font-size:20px;font-weight:600;margin-bottom:.25rem}
+.page-sub{font-size:13px;color:#5F5E5A;margin-bottom:2rem}
+.section-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#888780;margin-bottom:.5rem}
+.headline{font-size:17px;font-weight:600;color:#2C2C2A;margin-bottom:.25rem}
+.sub{font-size:13px;color:#5F5E5A;line-height:1.5}
+.divider{border:none;border-top:1px solid #E8E7E3;margin:1.75rem 0}
+.card{background:#fff;border:1px solid #E8E7E3;border-radius:12px;padding:1rem 1.25rem}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:1rem 0}
+.kpi{background:#F1EFE8;border-radius:8px;padding:.75rem 1rem}
+.kpi-label{font-size:11px;color:#888780;margin-bottom:4px}
+.kpi-val{font-size:22px;font-weight:600;color:#2C2C2A}
+.kpi-delta{font-size:11px;margin-top:2px;color:#5F5E5A}
+.chart-wrap{position:relative;width:100%}
+.leg{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:#5F5E5A;margin-bottom:8px}
+.leg-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:middle}
+.insight-bar{border-left:3px solid;padding:.6rem .9rem;margin:.75rem 0;font-size:13px;line-height:1.5;border-radius:0}
+.insight-bar.blue{border-color:#185FA5;background:#E6F1FB;color:#0C447C}
+.insight-bar.amber{border-color:#BA7517;background:#FAEEDA;color:#633806}
+.insight-bar.red{border-color:#A32D2D;background:#FCEBEB;color:#791F1F}
+.insight-bar.teal{border-color:#0F6E56;background:#E1F5EE;color:#085041}
+.flow-row{display:flex;align-items:stretch;gap:0;margin:1rem 0}
+.flow-node{flex:1;padding:.75rem;text-align:center;border:1px solid #E8E7E3}
+.flow-node:first-child{border-radius:8px 0 0 8px}
+.flow-node:last-child{border-radius:0 8px 8px 0}
+.flow-arrow{display:flex;align-items:center;padding:0 4px;color:#888780;font-size:18px}
+.flow-node-title{font-size:11px;font-weight:600;margin-bottom:4px}
+.flow-node-val{font-size:18px;font-weight:600}
+.flow-node-unit{font-size:10px;color:#5F5E5A;margin-top:2px}
+.fn-blue{background:#E6F1FB;border-color:#85B7EB}
+.fn-blue .flow-node-title{color:#0C447C}
+.fn-blue .flow-node-val{color:#185FA5}
+.fn-amber{background:#FAEEDA;border-color:#EF9F27}
+.fn-amber .flow-node-title{color:#633806}
+.fn-amber .flow-node-val{color:#BA7517}
+.fn-red{background:#FCEBEB;border-color:#F09595}
+.fn-red .flow-node-title{color:#791F1F}
+.fn-red .flow-node-val{color:#A32D2D}
+.fn-teal{background:#E1F5EE;border-color:#5DCAA5}
+.fn-teal .flow-node-title{color:#085041}
+.fn-teal .flow-node-val{color:#0F6E56}
+.matrix-table{width:100%;border-collapse:collapse;font-size:13px}
+.matrix-table th{font-size:11px;font-weight:600;color:#5F5E5A;text-align:left;padding:6px 8px;border-bottom:1px solid #E8E7E3}
+.matrix-table td{padding:7px 8px;border-bottom:1px solid #E8E7E3;color:#2C2C2A;vertical-align:middle}
+.matrix-table tr:last-child td{border-bottom:none}
+.r2-bar{height:8px;border-radius:4px;display:inline-block;vertical-align:middle;margin-right:6px}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+.badge-strong{background:#E1F5EE;color:#085041}
+.badge-mod{background:#FAEEDA;color:#633806}
+.badge-weak{background:#FCEBEB;color:#791F1F}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:.5rem 0 1rem}
+input[type=range]{width:100%;accent-color:#185FA5}
+</style>
+</head>
+<body>
+<div class="db">
+
+<div class="page-title">Quality Management System Analytics Dashboard</div>
+<div class="page-sub">Sanchez-Marquez et al. (2020) — Computers in Industry, 115, Article 103183 &nbsp;|&nbsp; ALY6060: Decision Support &amp; Business Intelligence, Northeastern University</div>
+
+<div class="section-label">Act I — where does quality break down?</div>
+<div class="headline">The defect chain: from production floor to customer driveway</div>
+<div class="sub">Every defect that escapes internal inspection becomes a warranty claim. This flow shows the chain — and where the biggest leaks are.</div>
+
+<div class="flow-row">
+  <div class="flow-node fn-blue">
+    <div class="flow-node-title">Online production</div>
+    <div class="flow-node-val" id="ftt-val">79%</div>
+    <div class="flow-node-unit">First Time Through (FTT)</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node fn-blue">
+    <div class="flow-node-title">End-of-line audit</div>
+    <div class="flow-node-val">EL FTT</div>
+    <div class="flow-node-unit">Captures escapees from online</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node fn-amber">
+    <div class="flow-node-title">Final product audit</div>
+    <div class="flow-node-val">PA TGW B</div>
+    <div class="flow-node-unit">Predicts customer complaints</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node fn-red">
+    <div class="flow-node-title">Customer — 0 MIS</div>
+    <div class="flow-node-val" id="r0-val">—</div>
+    <div class="flow-node-unit">Warranty repairs / 1,000 units</div>
+  </div>
+  <div class="flow-arrow">↺</div>
+  <div class="flow-node fn-teal">
+    <div class="flow-node-title">Feedback loop</div>
+    <div class="flow-node-val">+3 mo</div>
+    <div class="flow-node-unit">Lag before audit recalibrates</div>
+  </div>
+</div>
+
+<div class="insight-bar blue"><strong>Core finding:</strong> FTT is the master lever. R1000 0MIS = 15.52 − 0.197 × FTT holds across all study periods with R²-pred = 76.86%. Every 2% gain in FTT cuts ~0.4 warranty repairs per 1,000 units.</div>
+
+<div class="section-label" style="margin-top:1.25rem">Interactive — simulate the lever</div>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:.5rem">
+  <span style="font-size:13px;color:#5F5E5A;white-space:nowrap">FTT</span>
+  <input type="range" id="ftt-slider" min="50" max="99" value="79" step="1">
+  <span style="font-size:14px;font-weight:600;min-width:40px" id="ftt-display">79%</span>
+</div>
+<div style="display:flex;gap:1.5rem;align-items:baseline;margin-bottom:.75rem">
+  <div><span style="font-size:12px;color:#5F5E5A">Predicted R1000 0MIS</span><br>
+    <span style="font-size:28px;font-weight:600;color:#A32D2D" id="pred-val">—</span>
+    <span style="font-size:13px;color:#5F5E5A"> repairs / 1,000 units</span>
+  </div>
+  <div><span style="font-size:12px;color:#5F5E5A">vs. baseline (FTT=79%)</span><br>
+    <span style="font-size:22px;font-weight:600" id="pred-delta">—</span>
+  </div>
+</div>
+<div class="chart-wrap" style="height:200px"><canvas id="regressionChart"></canvas></div>
+
+<hr class="divider">
+
+<div class="section-label">Act II — is the feedback loop fast enough?</div>
+<div class="headline">The 3-month blind spot</div>
+<div class="sub">Customer complaints at 0MIS don't reach product audit calibrations for ~3 months. The structural lag — and what it costs.</div>
+<div class="leg" style="margin-top:.75rem">
+  <span><span class="leg-dot" style="background:#185FA5"></span>R1000 0MIS — warranty rate</span>
+  <span><span class="leg-dot" style="background:#BA7517"></span>PA TGW B — audit signal (lagged 3 months)</span>
+</div>
+<div class="chart-wrap" style="height:210px"><canvas id="lagChart"></canvas></div>
+<div class="kpi-grid">
+  <div class="kpi"><div class="kpi-label">Feedback lag</div><div class="kpi-val" style="color:#BA7517">3 months</div><div class="kpi-delta">60 days data maturity + 30 days process</div></div>
+  <div class="kpi"><div class="kpi-label">Feedback model R²-pred</div><div class="kpi-val" style="color:#185FA5">62%</div><div class="kpi-delta">PA TGW B → R1000 0MIS at t−3</div></div>
+  <div class="kpi"><div class="kpi-label">Defect leak rate</div><div class="kpi-val" style="color:#A32D2D">&lt;1%</div><div class="kpi-delta">Type II error — 10× better than industry avg</div></div>
+</div>
+<div class="insight-bar amber"><strong>The blind spot:</strong> At t−1 and t−2, there is no statistically significant relationship between warranty claims and audit signals. Only at t−3 does feedback emerge. In the 3-month window, defective production runs undetected by the audit calibration system.</div>
+
+<hr class="divider">
+
+<div class="section-label">Act III — which KPIs actually matter?</div>
+<div class="headline">Model strength matrix: all regression findings</div>
+<div class="sub">Not all KPI pairs are equal. Every relationship tested — ranked by predictive power and strategic implication.</div>
+<div class="card" style="margin:1rem 0">
+<table class="matrix-table">
+  <thead><tr><th>Predictor (X)</th><th>Outcome (Y)</th><th>R²-pred</th><th>Strength</th><th>Strategic implication</th></tr></thead>
+  <tbody>
+    <tr><td><strong>FTT</strong></td><td>R1000 0MIS</td><td><span class="r2-bar" style="width:77px;background:#185FA5"></span>76.9%</td><td><span class="badge badge-strong">Very strong</span></td><td>Primary lever — adopted as global KPI</td></tr>
+    <tr><td><strong>R1000 1MIS</strong></td><td>R1000 3MIS</td><td><span class="r2-bar" style="width:80px;background:#185FA5"></span>80.0%</td><td><span class="badge badge-strong">Very strong</span></td><td>Redundant — eliminate 3MIS, keep 1MIS</td></tr>
+    <tr><td><strong>D1000</strong></td><td>R1000 0MIS</td><td><span class="r2-bar" style="width:57px;background:#378ADD"></span>56.7%</td><td><span class="badge badge-strong">Strong</span></td><td>Confirms FTT — validates leak rate &lt;1%</td></tr>
+    <tr><td><strong>PA TGW B (t−3)</strong></td><td>R1000 0MIS</td><td><span class="r2-bar" style="width:62px;background:#378ADD"></span>62.0%</td><td><span class="badge badge-strong">Strong</span></td><td>Feedback works — but only with 3-month lag</td></tr>
+    <tr><td><strong>EL D1000</strong> (Model A)</td><td>R1000 0MIS</td><td><span class="r2-bar" style="width:60px;background:#378ADD"></span>60.0%</td><td><span class="badge badge-strong">Strong</span></td><td>End-of-line predictive for Model A</td></tr>
+    <tr><td><strong>D1000</strong> (Model C)</td><td>R1000 0MIS</td><td><span class="r2-bar" style="width:30px;background:#EF9F27"></span>30.0%</td><td><span class="badge badge-mod">Moderate</span></td><td>Weaker signal — volume uncertainty</td></tr>
+    <tr><td><strong>ONLINE %</strong> (Model D)</td><td>R1000 3MIS</td><td><span class="r2-bar" style="width:21px;background:#E24B4A"></span>21.0%</td><td><span class="badge badge-weak">Weak</span></td><td>Only model detecting 3MIS failure modes internally</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="insight-bar teal"><strong>BSC simplification payoff:</strong> Of 15 original KPIs, only FTT, D1000, and R1000 1MIS survive as strategically non-redundant. Eliminating R1000 3MIS accelerates management reaction time by 2 months.</div>
+
+<hr class="divider">
+
+<div class="section-label">Act IV — model reliability across production lines</div>
+<div class="headline">Why the same KPI behaves differently by production model</div>
+<div class="sub">Aggregate results are strong. Split by model, relationships weaken — small production volumes inflate statistical uncertainty. This is the key limitation Industry 4.0 real-time data solves.</div>
+<div class="leg" style="margin-top:.75rem">
+  <span><span class="leg-dot" style="background:#185FA5"></span>All models pooled</span>
+  <span><span class="leg-dot" style="background:#5DCAA5"></span>Model A</span>
+  <span><span class="leg-dot" style="background:#EF9F27"></span>Model C</span>
+  <span><span class="leg-dot" style="background:#E24B4A"></span>Model D</span>
+</div>
+<div class="chart-wrap" style="height:230px"><canvas id="modelChart"></canvas></div>
+<div class="insight-bar red" style="margin-top:.75rem"><strong>The sample size trap:</strong> Model B has no confirmed regression relationship — not because quality relationships don't exist, but because low production volumes make coefficients statistically unreliable. Real-time IoT data pipelines eliminate this permanently by making n large enough to detect even weak signals.</div>
+
+<hr class="divider">
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:2rem">
+  <div class="card"><div style="font-size:12px;font-weight:600;color:#085041;margin-bottom:.4rem">What the data proves</div><div style="font-size:13px;color:#5F5E5A;line-height:1.6">One internal KPI — FTT — predicts customer warranty rate with 76.9% accuracy. A 2% improvement eliminates 0.4 warranty repairs per 1,000 units. The QMS is calibrated correctly; the problem is speed of feedback.</div></div>
+  <div class="card"><div style="font-size:12px;font-weight:600;color:#633806;margin-bottom:.4rem">What Industry 4.0 changes</div><div style="font-size:13px;color:#5F5E5A;line-height:1.6">The 3-month lag compresses to hours. Sample size constraints disappear. Model B becomes analyzable. Cross-facility benchmarking becomes possible. The analytical logic stays identical — only the infrastructure accelerates it.</div></div>
+</div>
+
+<div style="font-size:11px;color:#888780;border-top:1px solid #E8E7E3;padding-top:.75rem">Data reconstructed from Sanchez-Marquez, R., Albarracín Guillem, J. M., Vicens-Salort, E., &amp; Jabaloyes Vivas, J. (2020). Diagnosis of quality management systems using data analytics: A case study in the manufacturing sector. <em>Computers in Industry, 115</em>, Article 103183. https://doi.org/10.1016/j.compind.2019.103183</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const BLUE='#185FA5',AMBER='#BA7517',RED='#A32D2D',TEAL='#0F6E56',LTEAL='#5DCAA5',LAMBER='#FAC775',LRED='#F09595',GRAY='#888780';
+const textCol='#5F5E5A',gridCol='rgba(0,0,0,0.06)';
+function baseOpts(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridCol},ticks:{color:textCol,font:{size:11}}},y:{grid:{color:gridCol},ticks:{color:textCol,font:{size:11}}}}}}
+const fttPts=[];for(let f=50;f<=99;f+=2)fttPts.push({x:f,y:parseFloat((15.52-0.197*f).toFixed(2))});
+const seed=[{x:58,y:4.1},{x:63,y:3.3},{x:68,y:2.8},{x:71,y:2.2},{x:75,y:1.9},{x:78,y:1.6},{x:80,y:1.3},{x:83,y:0.9},{x:87,y:0.7},{x:90,y:0.4},{x:93,y:0.2}];
+const rc=new Chart(document.getElementById('regressionChart'),{type:'scatter',data:{datasets:[{label:'Regression line',data:fttPts,type:'line',borderColor:RED,borderWidth:2,pointRadius:0,tension:0,fill:false},{label:'Observed data',data:seed,backgroundColor:BLUE,pointRadius:5,pointStyle:'circle'},{label:'Your selection',data:[],backgroundColor:'#E24B4A',pointRadius:9,pointStyle:'triangle',pointBorderColor:'#fff',pointBorderWidth:2}]},options:{...baseOpts(),scales:{x:{...baseOpts().scales.x,title:{display:true,text:'FTT (%)',color:textCol,font:{size:11}}},y:{...baseOpts().scales.y,min:-1,max:7,title:{display:true,text:'R1000 0MIS (repairs/1k)',color:textCol,font:{size:11}}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: (${c.parsed.x}%, ${c.parsed.y!=null?c.parsed.y.toFixed(2):'—'})`}}}}});
+const baseline=parseFloat((15.52-0.197*79).toFixed(2));
+function updateSlider(){const v=parseInt(document.getElementById('ftt-slider').value);document.getElementById('ftt-display').textContent=v+'%';document.getElementById('ftt-val').textContent=v+'%';const pred=Math.max(parseFloat((15.52-0.197*v).toFixed(2)),0);document.getElementById('pred-val').textContent=pred.toFixed(2);document.getElementById('r0-val').textContent=pred.toFixed(2);const delta=pred-baseline;const dEl=document.getElementById('pred-delta');dEl.textContent=(delta>0?'+':'')+delta.toFixed(2)+' vs. baseline';dEl.style.color=delta<0?TEAL:delta>0?RED:GRAY;rc.data.datasets[2].data=[{x:v,y:pred}];rc.update('none');}
+document.getElementById('ftt-slider').addEventListener('input',updateSlider);updateSlider();
+const months=Array.from({length:24},(_,i)=>i+1);
+const rSeed=[3.7,3.6,3.4,3.0,3.5,3.8,3.3,2.8,2.5,2.3,2.7,3.1,3.5,3.8,3.6,3.4,3.2,3.5,3.7,3.4,3.1,3.3,3.2,2.9];
+const paSeed=months.map((_,i)=>i<3?null:parseFloat((rSeed[i-3]*0.85+0.05).toFixed(2)));
+new Chart(document.getElementById('lagChart'),{type:'line',data:{datasets:[{label:'R1000 0MIS',data:rSeed.map((y,i)=>({x:months[i],y})),borderColor:BLUE,borderWidth:2.5,pointRadius:3,tension:0.3,fill:false},{label:'PA TGW B (t-3)',data:paSeed.map((y,i)=>({x:months[i],y})),borderColor:AMBER,borderWidth:2,borderDash:[5,3],pointRadius:3,tension:0.3,fill:false,pointStyle:'rect'}]},options:{...baseOpts(),scales:{x:{type:'linear',min:1,max:24,ticks:{color:textCol,font:{size:11},callback:v=>'M'+v},grid:{color:gridCol},title:{display:true,text:'Month',color:textCol,font:{size:11}}},y:{grid:{color:gridCol},ticks:{color:textCol,font:{size:11}},min:1.5,max:4.5,title:{display:true,text:'Normalized KPI',color:textCol,font:{size:11}}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!=null?c.parsed.y.toFixed(2):'—'}`}}}}});
+new Chart(document.getElementById('modelChart'),{type:'bar',data:{labels:['FTT → R1000 0MIS','D1000 → R1000 0MIS','ONLINE → R1000 3MIS'],datasets:[{label:'All models pooled',data:[76.9,56.7,null],backgroundColor:BLUE+'CC',borderColor:BLUE,borderWidth:1},{label:'Model A',data:[null,60,null],backgroundColor:LTEAL+'CC',borderColor:TEAL,borderWidth:1},{label:'Model C',data:[null,30,null],backgroundColor:LAMBER+'CC',borderColor:AMBER,borderWidth:1},{label:'Model D',data:[null,null,21],backgroundColor:LRED+'CC',borderColor:RED,borderWidth:1}]},options:{...baseOpts(),scales:{x:{grid:{display:false},ticks:{color:textCol,font:{size:11},maxRotation:0,autoSkip:false}},y:{grid:{color:gridCol},min:0,max:100,ticks:{color:textCol,font:{size:11},callback:v=>v+'%'},title:{display:true,text:'R²-pred (%)',color:textCol,font:{size:11}}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw!=null?`${c.dataset.label}: ${c.raw}%`:'No significant model found'}}}}});
+</script>
+</body>
+</html>
